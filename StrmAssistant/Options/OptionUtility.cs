@@ -145,7 +145,7 @@ namespace StrmAssistant.Options
                 validLibraryIds.Add(id);
             }
 
-            var libraryManager = Plugin.Instance.ApplicationHost.GetServiceByName("LibraryManager") as MediaBrowser.Controller.Library.ILibraryManager;
+            var libraryManager = Plugin.Instance.ApplicationHost.GetExports<MediaBrowser.Controller.Library.ILibraryManager>().FirstOrDefault();
             if (libraryManager == null)
                 return;
 

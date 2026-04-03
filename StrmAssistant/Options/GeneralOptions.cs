@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Attributes;
 using MediaBrowser.Model.LocalizationAttributes;
 using StrmAssistant.Common;
+using System.Linq;
 using StrmAssistant.Properties;
 using System;
 using System.Collections.Generic;
@@ -81,7 +82,7 @@ namespace StrmAssistant.Options
 
         public void Initialize()
         {
-            var libraryManager = Plugin.Instance.ApplicationHost.GetServiceByName("LibraryManager") as ILibraryManager;
+            var libraryManager = Plugin.Instance.ApplicationHost.GetExports<ILibraryManager>().FirstOrDefault();
             Initialize(libraryManager);
         }
 
