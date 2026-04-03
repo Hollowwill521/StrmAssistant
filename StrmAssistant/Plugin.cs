@@ -361,7 +361,8 @@ namespace StrmAssistant
                     }
                 }
 
-                if ((e.Item is Video || e.Item is Audio) && MainOptionsStore.PluginOptions.GeneralOptions.CatchupMode)
+                if ((e.Item is Video || e.Item is Audio) && MainOptionsStore.PluginOptions.GeneralOptions.CatchupMode &&
+                    IsCatchupLibraryInScope(e.Item))
                 {
                     if (IntroSkipStore.IntroSkipOptions.UnlockIntroSkip &&
                         IsCatchupTaskSelected(CatchupTask.Fingerprint) &&
@@ -479,12 +480,14 @@ namespace StrmAssistant
             if (e.UserData.IsFavorite)
             {
                 if (MainOptionsStore.PluginOptions.GeneralOptions.CatchupMode &&
+                    IsCatchupLibraryInScope(e.Item) &&
                     IntroSkipStore.IntroSkipOptions.UnlockIntroSkip && IsCatchupTaskSelected(CatchupTask.Fingerprint) &&
                     FingerprintApi.IsLibraryInScope(e.Item) && (e.Item is Series || e.Item is Episode))
                 {
                     QueueManager.FingerprintItemQueue.Enqueue(e.Item);
                 }
                 else if (MainOptionsStore.PluginOptions.GeneralOptions.CatchupMode &&
+                         IsCatchupLibraryInScope(e.Item) &&
                          IsCatchupTaskSelected(CatchupTask.MediaInfo))
                 {
                     QueueManager.MediaInfoExtractItemQueue.Enqueue(e.Item);

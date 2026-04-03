@@ -2,8 +2,10 @@ using Emby.Media.Common.Extensions;
 using Emby.Web.GenericEdit;
 using Emby.Web.GenericEdit.Common;
 using Emby.Web.GenericEdit.Validation;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Attributes;
 using MediaBrowser.Model.LocalizationAttributes;
+using StrmAssistant.Common;
 using StrmAssistant.Properties;
 using System;
 using System.Collections.Generic;
@@ -42,6 +44,16 @@ namespace StrmAssistant.Options
         [VisibleCondition(nameof(CatchupMode), SimpleCondition.IsTrue)]
         public string CatchupTaskScope { get; set; } = CatchupTask.MediaInfo.ToString();
 
+        [Browsable(false)]
+        public List<EditorSelectOption> LibraryList { get; set; } = new List<EditorSelectOption>();
+
+        [DisplayNameL("PluginOptions_LibraryScope_Library_Scope", typeof(Resources))]
+        [DescriptionL("PluginOptions_CatchupLibraryScope_Select_libraries_to_enable_catchup_mode__Default_is_all_", typeof(Resources))]
+        [EditMultilSelect]
+        [SelectItemsSource(nameof(LibraryList))]
+        [VisibleCondition(nameof(CatchupMode), SimpleCondition.IsTrue)]
+        public string CatchupLibraryScope { get; set; } = string.Empty;
+
         [DisplayNameL("PluginOptions_MaxConcurrentCount_Max_Concurrent_Count", typeof(Resources))]
         [DescriptionL("PluginOptions_MaxConcurrentCount_Max_Concurrent_Count_must_be_between_1_to_10__Default_is_1_", typeof(Resources))]
         [Required, MinValue(1), MaxValue(20)]
@@ -69,6 +81,12 @@ namespace StrmAssistant.Options
 
         public void Initialize()
         {
+            var libraryManager = Plugin.Instance.ApplicationHost.GetServiceByName("LibraryManager") as ILibraryManager;
+            Initialize(libraryManager);
+        }
+
+        public void Initialize(ILibraryManager libraryManager)
+        {
             CatchupTaskList.Clear();
 
             foreach (Enum item in Enum.GetValues(typeof(CatchupTask)))
@@ -81,6 +99,37 @@ namespace StrmAssistant.Options
                 };
 
                 CatchupTaskList.Add(selectOption);
+            }
+
+            LibraryList.Clear();
+
+            LibraryList.Add(new EditorSelectOption
+            {
+                Value = "-1",
+                Name = Resources.Favorites,
+                IsEnabled = true
+            });
+
+            if (libraryManager != null)
+            {
+                var libraries = libraryManager.GetVirtualFolders();
+
+                foreach (var item in libraries)
+                {
+                    if (LibraryApi.ExcludedCollectionTypes.Contains(item.CollectionType))
+                    {
+                        continue;
+                    }
+
+                    var selectOption = new EditorSelectOption
+                    {
+                        Value = item.ItemId,
+                        Name = item.Name,
+                        IsEnabled = true,
+                    };
+
+                    LibraryList.Add(selectOption);
+                }
             }
         }
     }

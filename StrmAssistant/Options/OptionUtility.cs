@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Playlists;
+using StrmAssistant.Common;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -23,6 +24,7 @@ namespace StrmAssistant.Options
             new ConcurrentDictionary<long, ConcurrentDictionary<string, byte>>();
 
         private static HashSet<string> _selectedCatchupTasks = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private static List<string> _catchupLibraryPaths = new List<string>();
         private static HashSet<string> _selectedIntroSkipPreferences = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private static string[] _includeItemTypes = Array.Empty<string>();
 
@@ -30,6 +32,7 @@ namespace StrmAssistant.Options
         {
             UpdateExclusiveControlFeatures(Plugin.Instance.MediaInfoExtractStore.GetOptions());
             UpdateCatchupScope(Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.CatchupTaskScope);
+            UpdateCatchupLibraryScope(Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.CatchupLibraryScope);
             UpdateIntroSkipPreferences(Plugin.Instance.IntroSkipStore.GetOptions().IntroSkipPreferences);
             UpdateSearchScope(Plugin.Instance.MainOptionsStore.GetOptions().ModOptions.SearchScope);
         }
@@ -122,6 +125,48 @@ namespace StrmAssistant.Options
         public static bool IsCatchupTaskSelected(params CatchupTask[] tasksToCheck)
         {
             return tasksToCheck.Any(f => _selectedCatchupTasks.Contains(f.ToString()));
+        }
+
+        public static void UpdateCatchupLibraryScope(string currentScope)
+        {
+            _catchupLibraryPaths = new List<string>();
+
+            if (string.IsNullOrEmpty(currentScope))
+            {
+                // Empty scope means all libraries are included
+                return;
+            }
+
+            var validLibraryIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var libraryIds = currentScope.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (var id in libraryIds)
+            {
+                validLibraryIds.Add(id);
+            }
+
+            var libraryManager = Plugin.Instance.ApplicationHost.GetServiceByName("LibraryManager") as MediaBrowser.Controller.Library.ILibraryManager;
+            if (libraryManager == null)
+                return;
+
+            var libraries = libraryManager.GetVirtualFolders()
+                .Where(f => !LibraryApi.ExcludedCollectionTypes.Contains(f.CollectionType) &&
+                            (validLibraryIds.All(id => id == "-1") || validLibraryIds.Contains(f.ItemId)))
+                .ToList();
+
+            _catchupLibraryPaths = libraries.SelectMany(l => l.Locations).ToList();
+        }
+
+        public static bool IsCatchupLibraryInScope(BaseItem item)
+        {
+            if (string.IsNullOrEmpty(item?.Path))
+                return false;
+
+            // Empty scope means all libraries
+            if (!_catchupLibraryPaths.Any())
+                return true;
+
+            return _catchupLibraryPaths.Any(l => item.Path.StartsWith(l));
         }
 
         public static string GetSelectedCatchupTaskDescription()

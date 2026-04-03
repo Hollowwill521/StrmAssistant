@@ -530,6 +530,9 @@
   <data name="GeneralOptions_CatchupScope_Catchup_Scope" xml:space="preserve">
     <value>Catchup Task Scope</value>
   </data>
+  <data name="PluginOptions_CatchupLibraryScope_Select_libraries_to_enable_catchup_mode__Default_is_all_" xml:space="preserve">
+    <value>Select libraries to enable catchup mode. Leave blank to enable for all libraries.</value>
+  </data>
   <data name="IntroSkipOptions_ClientScope_Client_Scope" xml:space="preserve">
     <value>Allowed Clients</value>
   </data>

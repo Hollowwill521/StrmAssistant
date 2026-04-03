@@ -443,6 +443,9 @@
   <data name="GeneralOptions_CatchupScope_Catchup_Scope" xml:space="preserve">
     <value>追更任务范围</value>
   </data>
+  <data name="PluginOptions_CatchupLibraryScope_Select_libraries_to_enable_catchup_mode__Default_is_all_" xml:space="preserve">
+    <value>追更模式启用的媒体库，留空则对所有媒体库启用。</value>
+  </data>
   <data name="IntroSkipOptions_ClientScope_Client_Scope" xml:space="preserve">
     <value>允许的客户端</value>
   </data>
