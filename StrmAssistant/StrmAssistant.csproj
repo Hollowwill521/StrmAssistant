@@ -6,6 +6,7 @@
     <CopyLocalLockFileAssemblies>True</CopyLocalLockFileAssemblies>
     <IncludeSourceRevisionInInformationalVersion>true</IncludeSourceRevisionInInformationalVersion>
     <LangVersion>latest</LangVersion>
+    <ILRepack>$(NuGetPackageRoot)ilrepack\2.0.42\tools\ILRepack.exe</ILRepack>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Tokenizer\linux\libsimple.so" />
@@ -58,6 +59,8 @@
     </EmbeddedResource>
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="$(ILRepack) /out:%25AppData%25\Emby-Server\programdata\plugins\$(TargetFileName) $(TargetPath) $(TargetDir)0Harmony.dll $(TargetDir)ChineseConverter.dll $(TargetDir)TinyPinyin.dll /lib:$(TargetDir)" />
+    <MakeDir Directories="%25AppData%25\Emby-Server\programdata\plugins" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="%25AppData%25\Emby-Server\programdata\plugins" ContinueOnError="true" />
+    <Message Text="Plugin DLL copied to %AppData%\Emby-Server\programdata\plugins\$(TargetFileName)" />
   </Target>
 </Project>
